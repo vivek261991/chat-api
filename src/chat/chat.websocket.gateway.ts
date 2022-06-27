@@ -9,7 +9,7 @@ import {Socket} from 'socket.io';
 import {ConflictException, ForbiddenException, NotFoundException} from '@nestjs/common';
 import {Participant, ChatDto, toMessageDto, RoomData, RoomDto} from "./chat.dto";
 
-@WebSocketGateway()
+@WebSocketGateway({ transports: ['websocket'], cors: true } )
 export class ChatWebsocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @WebSocketServer() server;
@@ -58,10 +58,11 @@ export class ChatWebsocketGateway implements OnGatewayConnection, OnGatewayDisco
         participant.connected = true;
         room.participants.set(socketId, participant);
         // when received new participant we notify the chatter by room
-        this.server.emit(
+        /* this.server.emit(
             `participants/${roomId}`,
             Array.from(room.participants.values()),
-        );
+        ); */
+        this.server.emit('exchanges', Array.from(room.participants.values()))
     }
 
     @SubscribeMessage('exchanges')
@@ -75,15 +76,31 @@ export class ChatWebsocketGateway implements OnGatewayConnection, OnGatewayDisco
         );
         const roomId = message.roomId;
         const roomData = ChatWebsocketGateway.rooms.get(roomId);
+
+        if (!roomData) {
+            return 'Invalid Room ID'
+        }
+
         message.order = roomData.messages.length + 1;
         roomData.messages.push(message);
         ChatWebsocketGateway.rooms.set(roomId, roomData);
         // when received message we notify the chatter by room
-        this.server.emit(roomId, toMessageDto(message));
+        // this.server.emit(roomId, toMessageDto(message));
+        // return message
+        // socket.broadcast.emit('exchanges', message); => sends back message to all connected clients except to the one who emitted the msg.
+        this.server.emit('exchanges', message) // sends back messages to all connected clients including the one who emitted the msg.
     }
 
     static get(roomId: string): RoomData {
         return this.rooms.get(roomId);
+    }
+
+    static getAllRoomInfo() {
+        let result = []
+        ChatWebsocketGateway.rooms.forEach((value, key) => {
+            result.push({key: value})
+        });
+        return result
     }
 
     static createRoom(roomDto: RoomDto): void {

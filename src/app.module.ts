@@ -5,7 +5,6 @@ import {ChatWebsocketGateway} from "./chat/chat.websocket.gateway";
 
 @Module({
   imports: [ChatModule],
-  controllers: [RoomsController],
-  providers: [ChatWebsocketGateway],
+  controllers: [RoomsController]
 })
 export class AppModule {}

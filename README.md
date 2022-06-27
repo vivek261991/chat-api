@@ -1,4 +1,4 @@
-## Chat server with nestJs and websocket
+## Nest JS based Chat server with API and websocket gateway
 
 ![home](img/home.jpg)
 
@@ -31,18 +31,15 @@ npm i --save-dev @types/socket.io
 
 - ### Init:
   We add `@WebSocketServer() server;` inside of our [ChatWebsocketGateway](/src/chat/chat.websocket.gateway.ts) to 
-  attaches a native Web Socket Server to our property `server` and then we use the decorator
-  `@WebSocketGateway(port?: number)`to mark our **WebsocketGateway** class as a **Nest gateway** that enables
-  **real-time**, **bidirectional** and **event-based communication** between the browser and the server
+  attaches a native Web Socket Server to our property `server` which is
+  **real-time**, **bidirectional** and **event-based communication** between the client and the server
 
 - ### Handlers:
-  In order de hand the connection and disconnection at our websocket server we need to implement interfaces 
+  To handle the connection and disconnection at our websocket server we need implement interfaces
   `OnGatewayConnection` and `OnGatewayDisconnect`.
 
 - ### Subscribers:
-  We use decorator `@SubscribeMessage('exmple-channel')` on the method that handles our business rules on `exmple-channel` events,
-  for example we use `@SubscribeMessage('chat')` to cap and handle the chat events. You can implement a custom subscriber as: 
-  `@SubscribeMessage({channel: 'messages', type: 'group'})` in order to hand messages event of groups only.
+  We use decorator `@SubscribeMessage('exchanges')` on the method that handles our messagin  rules on `exchanges` events,
 
 ## APIs
 
@@ -62,7 +59,7 @@ npm i --save-dev @types/socket.io
     curl -X POST 'http://localhost:3000/api/v1/rooms' \
     --data-raw '{
         "roomId": "3XX",
-        "creatorUsername": "idirnaitali"
+        "creatorUsername": "Dhoni"
     }'
     ```
   #### Error cases:
@@ -90,16 +87,14 @@ npm i --save-dev @types/socket.io
 - ### Get room messages:
 
   #### Resource:
-        /api/v1/rooms/{roomId}/messages?fromIndex={fromIndex}&toIndex={fromIndex}
+        /api/v1/rooms/{roomId}/messages
 
   #### Params:
         roomId: the room id
-        fromIndex: the index of the first message to get
-        fromIndex: the index of the last message to get
 
   #### Example:
     ```shell
-    curl -X GET 'http://localhost:3000/api/v1/rooms/3XX/messages?fromIndex=1&toIndex=20'
+    curl -X GET 'http://localhost:3000/api/v1/rooms/123/messages'
     ```
 
   #### Error cases:
@@ -109,31 +104,6 @@ npm i --save-dev @types/socket.io
     {
       "code": "access-forbidden",
       "message": "The access is forbidden"
-    }
-    ````
-
-    - Missing `fromIndex` / `toIndex`:
-    ````json
-    {
-      "statusCode": 400,
-      "message": "Validation failed (numeric string is expected)",
-      "error": "Bad Request"
-    }
-    ````
-
-    - Invalid `fromIndex` / `toIndex`:
-    ````json
-    {
-      "code": "req-params.validation",
-      "message": "Invalid parameters, 'fromIndex' and 'toIndex' must be positive"
-    }
-    ````
-
-    - Invalid `fromIndex` / `toIndex`:
-    ````json
-    {
-      "code": "req-params.validation",
-      "message": "Invalid parameters, 'toIndex' must no not be less than 'fromIndex'"
     }
     ````
 
@@ -148,14 +118,14 @@ npm i --save-dev @types/socket.io
   ### Example:
 
     ```shell
-    curl -X DELETE http://localhost:3000/api/v1/rooms/3XX 
+    curl -X DELETE http://localhost:3000/api/v1/rooms/123
     ```
 
   #### Error cases:
     - Invalid room id (ex: not found or closed):
     ````json
     {
-      "code": "room.not-fond",
+      "code": "room.not-found",
       "message": "Room with '3XX' not found"
     }
     ````

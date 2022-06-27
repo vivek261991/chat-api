@@ -3,7 +3,6 @@ import {IsNotEmpty} from 'class-validator';
 export interface MessageEventDto extends MessageDto {
     socketId?: string;
     roomId: string;
-    avatar: string;
 }
 
 export interface MessageDto {
@@ -16,13 +15,11 @@ export interface MessageDto {
 export interface ChatDto extends MessageDto {
     socketId?: string;
     roomId: string;
-    avatar: string;
 }
 
 export interface Participant {
     roomId: string;
     username: string;
-    avatar: string;
     connected: boolean;
 }
 

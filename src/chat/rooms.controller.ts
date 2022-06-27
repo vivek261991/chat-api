@@ -14,11 +14,6 @@ import {chatService} from "./chat.service";
 import {ChatWebsocketGateway} from "./chat.websocket.gateway";
 import {RoomDto} from "./chat.dto";
 
-interface Status {
-    status: string;
-    message: string;
-}
-
 export interface MessageDto {
     username: string;
     content: string;
@@ -41,20 +36,10 @@ export class RoomsController {
     }
 
     @Get('/:roomId/messages')
-    getRoomMessages(@Param('roomId') roomId: string,
-                    @Query('fromIndex', new ParseIntPipe(), new DefaultValuePipe(0)) fromIndex: number,
-                    @Query('toIndex', new ParseIntPipe(), new DefaultValuePipe(0)) toIndex: number): MessageDto[] {
-        console.log("Retrieving room messages with roomId: %s and indexes from: %s to %s", roomId, fromIndex, toIndex);
-
-        if (fromIndex <= 0 || toIndex <= 0) {
-            this.throwBadRequestException('req-params.validation', "Invalid parameters, 'fromIndex' and 'toIndex' must be positive");
-        }
-        if (fromIndex > toIndex) {
-            this.throwBadRequestException('req-params.validation', "Invalid parameters, 'toIndex' must no not be less than 'fromIndex'");
-        }
-
+    getRoomMessages(@Param('roomId') roomId: string): MessageDto[] {
+        console.log("Retrieving room messages with roomId: %s and indexes from: %s to %s", roomId);
         try {
-            return chatService.getMessages(roomId, fromIndex, toIndex);
+            return chatService.getMessages(roomId);
         } catch (e) {
             console.error('Failed to get room messages', e);
             throw new ForbiddenException({code: 'access-forbidden', message: 'The access is forbidden'});
@@ -71,6 +56,11 @@ export class RoomsController {
             console.error('Failed to close room', e);
             throw e;
         }
+    }
+
+    @Get('/room-info')
+    getRoomInfo() {
+        return ChatWebsocketGateway.getAllRoomInfo()
     }
 
     private throwBadRequestException(code: string, message: string) {
